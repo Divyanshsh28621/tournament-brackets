@@ -1,0 +1,1666 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>4-Team Single Elimination</title>
+    <style>
+      /* Include all the CSS from style-3.css */
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          sans-serif;
+        background: #f5f5f5;
+        height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow-x: auto;
+      }
+
+      @media (max-width: 1300px) {
+        body {
+          justify-content: flex-start;
+          padding-left: 20px;
+        }
+      }
+
+      .bracket {
+        position: relative;
+        width: 1200px;
+        min-width: 1200px;
+        height: 600px;
+      }
+
+      .bracket-header-container {
+        background-color: #fff;
+        border: 1px solid #c8c8c8;
+        border-radius: 10px;
+        box-shadow: rgba(99, 99, 99, 0.2) 0px 2px 8px 0px;
+        width: 100%;
+        position: absolute;
+        top: -150px;
+        height: 50px;
+        line-height: 50px;
+      }
+
+      .round-header {
+        position: absolute;
+        top: 0;
+        padding: 0 0 10px 0;
+        font-weight: 600;
+        font-size: 14px;
+        color: #666;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        z-index: 3;
+      }
+
+      .round-1-header {
+        left: 50px;
+      }
+
+      .round-2-header {
+        left: 350px;
+      }
+
+      .champion-header {
+        left: 650px;
+      }
+
+      .game-info {
+        position: absolute;
+        font-size: 12px;
+        color: #666;
+        z-index: 2;
+        width: 220px;
+        display: grid;
+        grid-template-columns: 1fr auto;
+        grid-template-rows: auto auto auto;
+        gap: 2px 10px;
+      }
+
+      .game-time {
+        grid-column: 1;
+        grid-row: 1;
+      }
+
+      .game-field-court {
+        grid-column: 2;
+        grid-row: 1;
+        text-align: right;
+      }
+
+      .game-date {
+        grid-column: 1;
+        grid-row: 2;
+      }
+
+      .game-number {
+        grid-column: 2;
+        grid-row: 2;
+        font-weight: 600;
+        color: #333;
+        text-align: right;
+      }
+
+      .game-location {
+        grid-column: 1;
+        grid-row: 3;
+      }
+
+      .round-1 {
+        position: absolute;
+        left: 50px;
+        display: flex;
+        flex-direction: column;
+        gap: 100px;
+        z-index: 2;
+      }
+
+      .round-1-game1 {
+        top: 50px;
+      }
+
+      .round-1-game2 {
+        top: 250px;
+      }
+
+      /* .round-2 {
+        position: absolute;
+        top: 150px;
+        left: 350px;
+        display: flex;
+        flex-direction: column;
+        gap: 100px;
+        z-index: 2;
+      } */
+
+      /* .clickable-game {
+        cursor: pointer;
+        border-radius: 8px;
+        padding: 10px;
+        transition: background-color 0.2s ease;
+      } */
+
+      .clickable-game {
+        cursor: pointer;
+        border-radius: 8px;
+        padding: 10px;
+        transition: background-color 0.2s ease;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+      }
+
+      .clickable-game:hover {
+        background-color: rgba(33, 150, 243, 0.1);
+      }
+
+      .clickable-game.disabled {
+        cursor: not-allowed;
+        opacity: 0.7;
+      }
+
+      .clickable-game.disabled:hover {
+        background-color: transparent;
+      }
+
+      /* .champion {
+        position: absolute;
+        top: 200px;
+        left: 650px;
+      } */
+
+      .connectors {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 1;
+      }
+
+      .connectors line {
+        stroke: #999;
+        stroke-width: 2;
+      }
+
+      .team {
+        background: white;
+        border: 2px solid #e0e0e0;
+        border-radius: 8px;
+        padding: 1rem 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        min-width: 250px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        transition: all 0.2s ease;
+        position: relative;
+        z-index: 2;
+      }
+
+      .team.bye {
+        border-color: #2196f3;
+        background: #f0f9ff;
+      }
+
+      .champion .team {
+        border-color: #ff9800;
+        background: #fff8e1;
+      }
+
+      .seed {
+        background: #666;
+        color: white;
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.8rem;
+        font-weight: 600;
+      }
+
+      .team.bye .seed {
+        background: #2196f3;
+      }
+
+      .champion .seed {
+        background: #ff9800;
+      }
+
+      .name {
+        flex: 1;
+        font-weight: 500;
+        font-size: 12px;
+      }
+
+      .score {
+        background: #f0f0f0;
+        padding: 0.25rem 0.5rem;
+        border-radius: 4px;
+        font-weight: 600;
+        min-width: 32px;
+        text-align: center;
+      }
+
+      .team.winner .score {
+        background: #4caf50;
+        color: white;
+      }
+
+      .bye-label {
+        background: #2196f3;
+        color: white;
+        padding: 0.25rem 0.75rem;
+        border-radius: 12px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+      }
+
+      .trophy {
+        font-size: 1.5rem;
+      }
+
+      /* Control Panel */
+      .control-panel {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        display: flex;
+        gap: 10px;
+        z-index: 100;
+      }
+
+      .control-btn {
+        background: #2196f3;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+      }
+
+      .control-btn:hover {
+        background: #1976d2;
+      }
+
+      .control-btn.locked {
+        background: #4caf50;
+      }
+
+      .control-btn.locked:hover {
+        background: #388e3c;
+      }
+
+      /* Seeding Modal */
+      .seeding-modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.8);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+      }
+
+      .seeding-modal.active {
+        display: flex;
+      }
+
+      .seeding-content {
+        background: #1a2332;
+        border-radius: 16px;
+        width: 90%;
+        max-width: 480px;
+        max-height: 90vh;
+        overflow-y: auto;
+        color: white;
+      }
+
+      .seeding-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 24px 24px 16px 24px;
+        border-bottom: 1px solid #2d3748;
+      }
+
+      .seeding-header h2 {
+        font-size: 20px;
+        font-weight: 600;
+        margin: 0;
+      }
+
+      .seeding-body {
+        padding: 24px;
+      }
+
+      .seeding-info {
+        background: #2d3748;
+        border-radius: 8px;
+        padding: 16px;
+        margin-bottom: 24px;
+        font-size: 14px;
+        line-height: 1.5;
+      }
+
+      .matchup-preview {
+        background: #2d3748;
+        border-radius: 8px;
+        padding: 16px;
+        margin-bottom: 24px;
+      }
+
+      .matchup-preview h3 {
+        font-size: 14px;
+        color: #a0aec0;
+        margin-bottom: 12px;
+      }
+
+      .matchup-list {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .matchup-item {
+        font-size: 14px;
+        color: #e2e8f0;
+      }
+
+      .seeding-list {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      .seeding-item {
+        background: #2d3748;
+        border-radius: 8px;
+        padding: 16px;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        cursor: move;
+        transition: all 0.2s ease;
+      }
+
+      .seeding-item:hover {
+        background: #374151;
+      }
+
+      .seeding-item.dragging {
+        opacity: 0.5;
+        background: #4a5568;
+      }
+
+      .seeding-item.drag-over {
+        border-top: 3px solid #4299e1;
+      }
+
+      .seeding-seed {
+        background: #666;
+        color: white;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+        font-weight: 600;
+      }
+
+      .seeding-team-info {
+        flex: 1;
+      }
+
+      .seeding-team-name {
+        font-size: 16px;
+        font-weight: 600;
+        margin-bottom: 4px;
+      }
+
+      .seeding-team-status {
+        font-size: 12px;
+        color: #a0aec0;
+      }
+
+      .drag-handle {
+        color: #a0aec0;
+        font-size: 20px;
+        cursor: move;
+      }
+
+      .seeding-actions {
+        display: flex;
+        gap: 12px;
+        margin-top: 24px;
+      }
+
+      .seeding-actions button {
+        flex: 1;
+      }
+
+      /* Modal Overlay */
+      .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.8);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+      }
+
+      .modal-overlay.active {
+        display: flex;
+      }
+
+      .modal-content {
+        background: #1a2332;
+        border-radius: 16px;
+        width: 90%;
+        max-width: 480px;
+        max-height: 90vh;
+        overflow-y: auto;
+        color: white;
+      }
+
+      .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 24px 24px 16px 24px;
+        border-bottom: 1px solid #2d3748;
+      }
+
+      .modal-header h2 {
+        font-size: 20px;
+        font-weight: 600;
+        margin: 0;
+      }
+
+      .close-modal {
+        background: none;
+        border: none;
+        color: #a0aec0;
+        font-size: 28px;
+        cursor: pointer;
+        padding: 0;
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .close-modal:hover {
+        color: white;
+      }
+
+      .modal-body {
+        padding: 24px;
+      }
+
+      .modal-game {
+        background: #2d3748;
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 24px;
+      }
+
+      .modal-team {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 0;
+      }
+
+      .modal-team:not(:last-child) {
+        border-bottom: 1px solid #4a5568;
+      }
+
+      .team-info {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .team-seed {
+        background: #666;
+        color: white;
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 14px;
+        font-weight: 600;
+      }
+
+      .team-name {
+        font-size: 16px;
+        font-weight: 500;
+      }
+
+      .score-input {
+        background: #1a2332;
+        border: 2px solid #4a5568;
+        border-radius: 8px;
+        color: white;
+        font-size: 24px;
+        font-weight: 600;
+        text-align: center;
+        width: 80px;
+        height: 50px;
+      }
+
+      .score-input:focus {
+        outline: none;
+        border-color: #4299e1;
+      }
+
+      .messaging-options {
+        margin-bottom: 24px;
+      }
+
+      .toggle-option {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 16px 0;
+      }
+
+      .toggle-option:not(:last-child) {
+        border-bottom: 1px solid #2d3748;
+      }
+
+      .toggle-label {
+        font-size: 16px;
+        font-weight: 500;
+      }
+
+      .toggle-switch {
+        position: relative;
+        display: inline-block;
+        width: 60px;
+        height: 34px;
+      }
+
+      .toggle-switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+      }
+
+      .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #4a5568;
+        transition: 0.3s;
+        border-radius: 34px;
+      }
+
+      .slider:before {
+        position: absolute;
+        content: "";
+        height: 26px;
+        width: 26px;
+        left: 4px;
+        bottom: 4px;
+        background-color: white;
+        transition: 0.3s;
+        border-radius: 50%;
+      }
+
+      input:checked + .slider {
+        background-color: #48bb78;
+      }
+
+      input:checked + .slider:before {
+        transform: translateX(26px);
+      }
+
+      .modal-actions {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      .btn-secondary {
+        background: none;
+        border: 2px solid #48bb78;
+        color: #48bb78;
+        padding: 14px 24px;
+        border-radius: 8px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+      }
+
+      .btn-secondary:hover {
+        background: #48bb78;
+        color: white;
+      }
+
+      .btn-primary {
+        background: #48bb78;
+        border: none;
+        color: white;
+        padding: 14px 24px;
+        border-radius: 8px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+      }
+
+      .btn-primary:hover {
+        background: #38a169;
+      }
+
+      .btn-cancel {
+        background: none;
+        border: 2px solid #e53e3e;
+        color: #e53e3e;
+        padding: 14px 24px;
+        border-radius: 8px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+      }
+
+      .btn-cancel:hover {
+        background: #e53e3e;
+        color: white;
+      }
+
+      .seeding-warning {
+        background: #fed7d7;
+        color: #c53030;
+        padding: 12px 16px;
+        border-radius: 8px;
+        margin-bottom: 16px;
+        font-size: 14px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .seeding-warning-icon {
+        font-size: 18px;
+      }
+
+      .round-1-game1 {
+        position: absolute;
+        top: 105px;
+        left: 60px;
+        z-index: 2;
+      }
+
+      .round-1-game2 {
+        position: absolute;
+        top: 325px;
+        left: 60px;
+        z-index: 2;
+      }
+
+      .round-2 {
+        position: absolute;
+        top: 225px;
+        left: 445px;
+        z-index: 2;
+      }
+
+      .champion {
+        position: absolute;
+        top: 235px;
+        left: 650px;
+      }
+
+      /* chatgpt */
+      .round-1-game1 {
+        top: 65px;
+      }
+
+      .round-1-game2 {
+        top: 290px;
+      }
+
+      .round-2 {
+        top: 175px; /* aligns Game 3 */
+      }
+
+      .champion {
+        top: 265px; /* aligns trophy */
+      }
+    </style>
+  </head>
+  <body style="overflow: auto">
+    <!-- Control Panel -->
+    <div class="control-panel">
+      <button class="control-btn" id="seedingBtn">Team Seeding</button>
+      <button
+        class="control-btn locked"
+        id="lockSeedingBtn"
+        style="display: none"
+      >
+        Seeding Locked
+      </button>
+    </div>
+
+    <div class="bracket" id="tournamentBracket">
+      <!-- Content will be dynamically generated -->
+    </div>
+
+    <!-- Seeding Modal -->
+    <div class="seeding-modal" id="seedingModal">
+      <div class="seeding-content">
+        <div class="seeding-header">
+          <h2>Team Seeding</h2>
+          <button class="close-modal" id="closeSeedingModal">×</button>
+        </div>
+
+        <div class="seeding-body">
+          <div class="seeding-info">
+            Drag and drop teams to set their seeding order. In the first round,
+            #1 seed will play #4 seed, and #2 seed will play #3 seed.
+          </div>
+
+          <div class="matchup-preview" id="matchupPreview">
+            <h3>First Round Matchups:</h3>
+            <div class="matchup-list" id="matchupList">
+              <!-- Matchups will be dynamically shown here -->
+            </div>
+          </div>
+
+          <div class="seeding-list" id="seedingList">
+            <!-- Teams will be dynamically added here -->
+          </div>
+
+          <div class="seeding-actions">
+            <button class="btn-cancel" id="cancelSeeding">Cancel</button>
+            <button class="btn-primary" id="saveSeeding">
+              Save & Lock Seeding
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Score Modal -->
+    <div class="modal-overlay" id="scoreModal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>Enter Score</h2>
+          <button class="close-modal" id="closeModal">×</button>
+        </div>
+
+        <div class="modal-body">
+          <div
+            class="seeding-warning"
+            id="seedingWarning"
+            style="display: none"
+          >
+            <span class="seeding-warning-icon">⚠️</span>
+            <span>Please complete team seeding before entering scores.</span>
+          </div>
+
+          <!-- Game Teams -->
+          <div class="modal-game">
+            <div class="modal-team">
+              <div class="team-info">
+                <span class="team-seed" id="modalTeam1Seed">1</span>
+                <span class="team-name" id="modalTeam1Name">Team 1</span>
+              </div>
+              <input
+                type="number"
+                class="score-input"
+                id="team1Score"
+                value="0"
+                min="0"
+              />
+            </div>
+
+            <div class="modal-team">
+              <div class="team-info">
+                <span class="team-seed" id="modalTeam2Seed">2</span>
+                <span class="team-name" id="modalTeam2Name">Team 2</span>
+              </div>
+              <input
+                type="number"
+                class="score-input"
+                id="team2Score"
+                value="0"
+                min="0"
+              />
+            </div>
+          </div>
+
+          <!-- Messaging Options -->
+          <div class="messaging-options">
+            <div class="toggle-option">
+              <span class="toggle-label">Auto Send SMS Update</span>
+              <label class="toggle-switch">
+                <input type="checkbox" id="smsToggle" checked />
+                <span class="slider"></span>
+              </label>
+            </div>
+
+            <div class="toggle-option">
+              <span class="toggle-label">Auto Send Email Update</span>
+              <label class="toggle-switch">
+                <input type="checkbox" id="emailToggle" checked />
+                <span class="slider"></span>
+              </label>
+            </div>
+
+            <div class="toggle-option">
+              <span class="toggle-label">Auto Send Push Update</span>
+              <label class="toggle-switch">
+                <input type="checkbox" id="pushToggle" checked />
+                <span class="slider"></span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="modal-actions">
+            <button class="btn-secondary" id="viewMessaging">
+              View or Edit Messaging
+            </button>
+            <button class="btn-primary" id="saveAndSend">Save & Send</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // State management
+      let seedingLocked = false;
+      let teams = [
+        { name: "HoCo 34 Black", originalSeed: 1 },
+        { name: "Broadneck 34", originalSeed: 2 },
+        { name: "Predators MD", originalSeed: 3 },
+        { name: "Ravens Elite", originalSeed: 4 },
+      ];
+
+      // Tournament data structure - rounds based format
+      let tournamentBracket = [
+        [
+          // Round 1 - 2 games
+          {
+            team1: {
+              name: "HoCo 34 Black",
+              score: null,
+              seed: 1,
+            },
+            team2: {
+              name: "Ravens Elite",
+              score: null,
+              seed: 4,
+            },
+            winner: null,
+            matchupIndex: 1,
+            seedPair: [1, 4],
+            gameInfo: {
+              time: "10:00 AM",
+              court: "Court 7",
+              date: "June 24th, 2025",
+              location: "Heat Sports Complex",
+            },
+          },
+          {
+            team1: {
+              name: "Broadneck 34",
+              score: null,
+              seed: 2,
+            },
+            team2: {
+              name: "Predators MD",
+              score: null,
+              seed: 3,
+            },
+            winner: null,
+            matchupIndex: 2,
+            seedPair: [2, 3],
+            gameInfo: {
+              time: "11:00 AM",
+              court: "Court 8",
+              date: "June 24th, 2025",
+              location: "Heat Sports Complex",
+            },
+          },
+        ],
+        [
+          // Round 2 (Final)
+          {
+            team1: {
+              name: "TBD",
+              score: null,
+            },
+            team2: {
+              name: "TBD",
+              score: null,
+            },
+            winner: null,
+            expectedWinners: [
+              {
+                fromRound: 0,
+                fromMatch: 0,
+                toPosition: "team1",
+              },
+              {
+                fromRound: 0,
+                fromMatch: 1,
+                toPosition: "team2",
+              },
+            ],
+            gameInfo: {
+              time: "2:00 PM",
+              court: "Center Court",
+              date: "June 24th, 2025",
+              location: "Heat Sports Complex",
+            },
+          },
+        ],
+      ];
+
+      // Round names for headers
+      const roundNames = ["First Round", "Final"];
+
+      // Function to generate bracket based on seeding
+      function generateBracketFromSeeding(seededTeams) {
+        // Reset bracket
+        const newBracket = [
+          [
+            // Round 1 - Game 1: 1v4, Game 2: 2v3
+            {
+              team1: {
+                name: seededTeams[0].name,
+                score: null,
+                seed: 1,
+              },
+              team2: {
+                name: seededTeams[3].name,
+                score: null,
+                seed: 4,
+              },
+              winner: null,
+              matchupIndex: 1,
+              seedPair: [1, 4],
+              gameInfo: {
+                time: "10:00 AM",
+                court: "Court 7",
+                date: "June 24th, 2025",
+                location: "Heat Sports Complex",
+              },
+            },
+            {
+              team1: {
+                name: seededTeams[1].name,
+                score: null,
+                seed: 2,
+              },
+              team2: {
+                name: seededTeams[2].name,
+                score: null,
+                seed: 3,
+              },
+              winner: null,
+              matchupIndex: 2,
+              seedPair: [2, 3],
+              gameInfo: {
+                time: "11:00 AM",
+                court: "Court 8",
+                date: "June 24th, 2025",
+                location: "Heat Sports Complex",
+              },
+            },
+          ],
+          [
+            // Round 2 (Final)
+            {
+              team1: {
+                name: "TBD",
+                score: null,
+              },
+              team2: {
+                name: "TBD",
+                score: null,
+              },
+              winner: null,
+              expectedWinners: [
+                {
+                  fromRound: 0,
+                  fromMatch: 0,
+                  toPosition: "team1",
+                },
+                {
+                  fromRound: 0,
+                  fromMatch: 1,
+                  toPosition: "team2",
+                },
+              ],
+              gameInfo: {
+                time: "2:00 PM",
+                court: "Center Court",
+                date: "June 24th, 2025",
+                location: "Heat Sports Complex",
+              },
+            },
+          ],
+        ];
+
+        return newBracket;
+      }
+
+      // Function to get champion
+      function getChampion() {
+        const finalMatch = tournamentBracket[tournamentBracket.length - 1][0];
+        if (finalMatch.winner) {
+          if (finalMatch.winner === finalMatch.team1.seed) {
+            return finalMatch.team1;
+          } else if (finalMatch.winner === finalMatch.team2.seed) {
+            return finalMatch.team2;
+          }
+        }
+        return null;
+      }
+
+      // Function to update winners to next rounds
+      function updateNextRounds(roundIndex, matchIndex) {
+        const match = tournamentBracket[roundIndex][matchIndex];
+
+        // Check all future rounds for expectedWinners
+        for (let r = roundIndex + 1; r < tournamentBracket.length; r++) {
+          for (let m = 0; m < tournamentBracket[r].length; m++) {
+            const futureMatch = tournamentBracket[r][m];
+            if (futureMatch.expectedWinners) {
+              futureMatch.expectedWinners.forEach((expected) => {
+                if (
+                  expected.fromRound === roundIndex &&
+                  expected.fromMatch === matchIndex
+                ) {
+                  // Get the winner's data
+                  let winnerData = null;
+                  if (match.winner === match.team1.seed) {
+                    winnerData = { ...match.team1, score: null };
+                  } else if (match.winner === match.team2.seed) {
+                    winnerData = { ...match.team2, score: null };
+                  }
+
+                  if (winnerData) {
+                    futureMatch[expected.toPosition] = winnerData;
+                  }
+                }
+              });
+            }
+          }
+        }
+      }
+
+      // Function to render the bracket
+      function renderBracket() {
+        const bracket = document.getElementById("tournamentBracket");
+        bracket.innerHTML = "";
+
+        // Create header container
+        const headerContainer = document.createElement("div");
+        headerContainer.className = "bracket-header-container";
+
+        // Add round headers
+        roundNames.forEach((name, index) => {
+          const header = document.createElement("div");
+          header.className = `round-header round-${index + 1}-header`;
+          header.textContent = name;
+          headerContainer.appendChild(header);
+        });
+
+        const championHeader = document.createElement("div");
+        championHeader.className = "round-header champion-header";
+        championHeader.textContent = "Champion";
+        headerContainer.appendChild(championHeader);
+
+        bracket.appendChild(headerContainer);
+
+        // Render Round 1 games
+        tournamentBracket[0].forEach((match, matchIndex) => {
+          // Create game info
+          const gameInfo = createGameInfo(
+            match.gameInfo,
+            matchIndex + 1,
+            matchIndex
+          );
+          gameInfo.style.top = matchIndex === 0 ? "50px" : "270px";
+          gameInfo.style.left = "70px";
+          bracket.appendChild(gameInfo);
+
+          // Create game element
+          const gameDiv = createGameElement(match, 0, matchIndex);
+          bracket.appendChild(gameDiv);
+        });
+
+        // Render Round 2 (Final)
+        const finalMatch = tournamentBracket[1][0];
+        const finalGameInfo = createGameInfo(finalMatch.gameInfo, 3, 0);
+        finalGameInfo.style.top = "170px";
+        finalGameInfo.style.left = "415px";
+        bracket.appendChild(finalGameInfo);
+
+        const finalDiv = createGameElement(finalMatch, 1, 0);
+        bracket.appendChild(finalDiv);
+
+        // Render Champion
+        const champion = getChampion();
+        if (champion) {
+          const championDiv = document.createElement("div");
+          championDiv.className = "champion";
+
+          const teamDiv = document.createElement("div");
+          teamDiv.className = "team winner";
+          teamDiv.style.transform = "translateY(0px)";
+          teamDiv.style.boxShadow = "rgba(0, 0, 0, 0.1) 0px 2px 4px";
+          teamDiv.innerHTML = `
+                    <span class="seed">${champion.seed}</span>
+                    <span class="name">${champion.name}</span>
+                    <span class="trophy">🏆</span>
+                `;
+          championDiv.appendChild(teamDiv);
+          bracket.appendChild(championDiv);
+        }
+
+        // Add connectors
+        const svg = document.createElementNS(
+          "http://www.w3.org/2000/svg",
+          "svg"
+        );
+        svg.setAttribute("class", "connectors");
+        svg.innerHTML = `
+        <!-- Game 1 (65px top) to junction -->
+        <line x1="310" y1="105" x2="360" y2="105"></line>
+        <line x1="310" y1="145" x2="360" y2="145"></line>
+        <line x1="360" y1="105" x2="360" y2="145"></line>
+        <line x1="360" y1="125" x2="445" y2="125"></line>
+        <line x1="445" y1="125" x2="445" y2="205"></line>
+
+        <!-- Game 2 (290px top) to junction -->
+        <line x1="310" y1="330" x2="360" y2="330"></line>
+        <line x1="310" y1="370" x2="360" y2="370"></line>
+        <line x1="360" y1="330" x2="360" y2="370"></line>
+        <line x1="360" y1="350" x2="445" y2="350"></line>
+        <line x1="445" y1="350" x2="445" y2="245"></line>
+
+        <!-- Final game (175px top) to Champion (265px top) -->
+        <line x1="695" y1="215" x2="730" y2="215"></line>
+        <line x1="695" y1="255" x2="730" y2="255"></line>
+        <line x1="730" y1="215" x2="730" y2="255"></line>
+        <line x1="730" y1="235" x2="760" y2="235"></line>
+        <line x1="760" y1="235" x2="760" y2="285"></line>
+        `;
+
+        bracket.appendChild(svg);
+
+        // Initialize event handlers
+        initializeEventHandlers();
+      }
+
+      // Function to create game info element
+      function createGameInfo(gameInfo, gameNumber, matchIndex) {
+        const gameInfoDiv = document.createElement("div");
+        gameInfoDiv.className = "game-info";
+        gameInfoDiv.innerHTML = `
+                <div class="game-time">${gameInfo.time}</div>
+                <div class="game-field-court"><a href="#">${gameInfo.court}</a></div>
+                <div class="game-date">${gameInfo.date}</div>
+                <div class="game-number">Game ${gameNumber}</div>
+                <div class="game-location"><a href="#">${gameInfo.location}</a></div>
+            `;
+        return gameInfoDiv;
+      }
+
+      // Function to create game element
+      function createGameElement(match, roundIndex, matchIndex) {
+        const gameDiv = document.createElement("div");
+        if (roundIndex === 0) {
+          gameDiv.className = `round-1-game${matchIndex + 1} clickable-game`;
+        } else {
+          gameDiv.className = `round-${roundIndex + 1} clickable-game`;
+        }
+        gameDiv.setAttribute("data-game", `round${roundIndex + 1}`);
+        gameDiv.setAttribute("data-round-index", roundIndex);
+        gameDiv.setAttribute("data-match-index", matchIndex);
+
+        // Team 1
+        const team1Div = document.createElement("div");
+        team1Div.className = "team";
+        if (match.team1.bye) team1Div.className += " bye";
+        if (match.winner === match.team1.seed) team1Div.className += " winner";
+        team1Div.style.transform = "translateY(0px)";
+        team1Div.style.boxShadow = "rgba(0, 0, 0, 0.1) 0px 2px 4px";
+        team1Div.innerHTML = `
+                <span class="seed">${match.team1.seed || ""}</span>
+                <span class="name">${match.team1.name}</span>
+                <span class="score">${
+                  match.team1.score !== null ? match.team1.score : "-"
+                }</span>
+            `;
+
+        // Team 2
+        const team2Div = document.createElement("div");
+        team2Div.className = "team";
+        if (match.team2.bye) team2Div.className += " bye";
+        if (match.winner === match.team2.seed) team2Div.className += " winner";
+        team2Div.style.transform = "translateY(0px)";
+        team2Div.style.boxShadow = "rgba(0, 0, 0, 0.1) 0px 2px 4px";
+        team2Div.innerHTML = `
+                <span class="seed">${match.team2.seed || ""}</span>
+                <span class="name">${match.team2.name}</span>
+                <span class="score">${
+                  match.team2.score !== null ? match.team2.score : "-"
+                }</span>
+            `;
+
+        gameDiv.appendChild(team1Div);
+        gameDiv.appendChild(team2Div);
+
+        return gameDiv;
+      }
+
+      // Seeding Modal Functions
+      function openSeedingModal() {
+        const modal = document.getElementById("seedingModal");
+        const list = document.getElementById("seedingList");
+        modal.classList.add("active");
+        document.body.style.overflow = "hidden";
+
+        // Clear and populate list
+        list.innerHTML = "";
+        teams.forEach((team, index) => {
+          const item = document.createElement("div");
+          item.className = "seeding-item";
+          item.draggable = true;
+          item.dataset.index = index;
+          item.innerHTML = `
+                    <span class="drag-handle">☰</span>
+                    <div class="seeding-seed">${index + 1}</div>
+                    <div class="seeding-team-info">
+                        <div class="seeding-team-name">${team.name}</div>
+                        <div class="seeding-team-status">Seed #${
+                          index + 1
+                        }</div>
+                    </div>
+                `;
+          list.appendChild(item);
+        });
+
+        updateMatchupPreview();
+        initializeDragAndDrop();
+      }
+
+      function updateMatchupPreview() {
+        const matchupList = document.getElementById("matchupList");
+        const currentOrder = Array.from(
+          document.querySelectorAll(".seeding-item")
+        ).map((item) => {
+          const originalIndex = parseInt(item.dataset.index);
+          return teams[originalIndex];
+        });
+
+        matchupList.innerHTML = `
+                <div class="matchup-item">Game 1: ${currentOrder[0].name} (#1) vs ${currentOrder[3].name} (#4)</div>
+                <div class="matchup-item">Game 2: ${currentOrder[1].name} (#2) vs ${currentOrder[2].name} (#3)</div>
+            `;
+      }
+
+      function closeSeedingModal() {
+        const modal = document.getElementById("seedingModal");
+        modal.classList.remove("active");
+        document.body.style.overflow = "auto";
+      }
+
+      // Drag and Drop functionality
+      function initializeDragAndDrop() {
+        const items = document.querySelectorAll(".seeding-item");
+        let draggedItem = null;
+
+        items.forEach((item) => {
+          item.addEventListener("dragstart", function (e) {
+            draggedItem = this;
+            this.classList.add("dragging");
+          });
+
+          item.addEventListener("dragend", function (e) {
+            this.classList.remove("dragging");
+          });
+
+          item.addEventListener("dragover", function (e) {
+            e.preventDefault();
+            if (this !== draggedItem) {
+              this.classList.add("drag-over");
+            }
+          });
+
+          item.addEventListener("dragleave", function (e) {
+            this.classList.remove("drag-over");
+          });
+
+          item.addEventListener("drop", function (e) {
+            e.preventDefault();
+            this.classList.remove("drag-over");
+
+            if (this !== draggedItem) {
+              const list = document.getElementById("seedingList");
+              const allItems = [...list.children];
+              const draggedIndex = allItems.indexOf(draggedItem);
+              const targetIndex = allItems.indexOf(this);
+
+              if (draggedIndex < targetIndex) {
+                this.parentNode.insertBefore(draggedItem, this.nextSibling);
+              } else {
+                this.parentNode.insertBefore(draggedItem, this);
+              }
+
+              updateSeedingOrder();
+            }
+          });
+        });
+      }
+
+      function updateSeedingOrder() {
+        const list = document.getElementById("seedingList");
+        const items = list.querySelectorAll(".seeding-item");
+        const newTeamOrder = [];
+
+        items.forEach((item, index) => {
+          const seed = item.querySelector(".seeding-seed");
+          const status = item.querySelector(".seeding-team-status");
+          seed.textContent = index + 1;
+          status.textContent = `Seed #${index + 1}`;
+
+          const originalIndex = parseInt(item.dataset.index);
+          newTeamOrder.push(teams[originalIndex]);
+        });
+
+        // Update teams array with new order
+        teams = newTeamOrder.map((team, index) => ({
+          ...team,
+          currentSeed: index + 1,
+        }));
+
+        updateMatchupPreview();
+      }
+
+      function saveSeeding() {
+        seedingLocked = true;
+
+        // Generate new bracket based on seeding
+        tournamentBracket = generateBracketFromSeeding(teams);
+
+        // Update UI
+        document.getElementById("seedingBtn").style.display = "none";
+        document.getElementById("lockSeedingBtn").style.display = "block";
+
+        closeSeedingModal();
+        renderBracket();
+      }
+
+      function unlockSeeding() {
+        if (confirm("Unlocking seeding will reset all scores. Are you sure?")) {
+          seedingLocked = false;
+
+          // Reset all scores in bracket
+          tournamentBracket.forEach((round) => {
+            round.forEach((match) => {
+              match.team1.score = null;
+              match.team2.score = null;
+              match.winner = null;
+            });
+          });
+
+          // Update UI
+          document.getElementById("seedingBtn").style.display = "block";
+          document.getElementById("lockSeedingBtn").style.display = "none";
+
+          renderBracket();
+        }
+      }
+
+      // Initialize event handlers
+      function initializeEventHandlers() {
+        const teams = document.querySelectorAll(".team");
+        const modal = document.getElementById("scoreModal");
+        const closeModalBtn = document.getElementById("closeModal");
+        const clickableGames = document.querySelectorAll(".clickable-game");
+        const saveAndSendBtn = document.getElementById("saveAndSend");
+        const viewMessagingBtn = document.getElementById("viewMessaging");
+
+        let currentRoundIndex = null;
+        let currentMatchIndex = null;
+
+        // Team hover effects
+        teams.forEach((team) => {
+          team.addEventListener("mouseenter", function () {
+            this.style.transform = "translateY(-2px)";
+            this.style.boxShadow = "0 4px 12px rgba(0,0,0,0.15)";
+          });
+
+          team.addEventListener("mouseleave", function () {
+            this.style.transform = "translateY(0)";
+            this.style.boxShadow = "0 2px 4px rgba(0,0,0,0.1)";
+          });
+        });
+
+        // Modal functionality
+        function openModal(gameElement) {
+          if (!seedingLocked) {
+            // Show warning and don't open modal
+            modal.classList.add("active");
+            document.body.style.overflow = "hidden";
+            document.getElementById("seedingWarning").style.display = "flex";
+            document.querySelector(".modal-game").style.display = "none";
+            document.querySelector(".messaging-options").style.display = "none";
+            document.getElementById("saveAndSend").style.display = "none";
+            document.getElementById("viewMessaging").style.display = "none";
+            return;
+          }
+
+          // Hide warning and show normal content
+          document.getElementById("seedingWarning").style.display = "none";
+          document.querySelector(".modal-game").style.display = "block";
+          document.querySelector(".messaging-options").style.display = "block";
+          document.getElementById("saveAndSend").style.display = "block";
+          document.getElementById("viewMessaging").style.display = "block";
+
+          currentRoundIndex = parseInt(
+            gameElement.getAttribute("data-round-index")
+          );
+          currentMatchIndex = parseInt(
+            gameElement.getAttribute("data-match-index")
+          );
+          modal.classList.add("active");
+          document.body.style.overflow = "hidden";
+
+          // Get match data
+          const match = tournamentBracket[currentRoundIndex][currentMatchIndex];
+
+          // Update modal
+          document.getElementById("modalTeam1Seed").textContent =
+            match.team1.seed || "";
+          document.getElementById("modalTeam1Name").textContent =
+            match.team1.name;
+          document.getElementById("modalTeam2Seed").textContent =
+            match.team2.seed || "";
+          document.getElementById("modalTeam2Name").textContent =
+            match.team2.name;
+
+          document.getElementById("team1Score").value =
+            match.team1.score !== null ? match.team1.score : 0;
+          document.getElementById("team2Score").value =
+            match.team2.score !== null ? match.team2.score : 0;
+
+          // Handle seed colors
+          const modalTeam1Seed = document.getElementById("modalTeam1Seed");
+          const modalTeam2Seed = document.getElementById("modalTeam2Seed");
+
+          modalTeam1Seed.style.background = "#666";
+          modalTeam2Seed.style.background = "#666";
+        }
+
+        function closeModal() {
+          modal.classList.remove("active");
+          document.body.style.overflow = "auto";
+          currentRoundIndex = null;
+          currentMatchIndex = null;
+        }
+
+        // Event listeners for modal
+        clickableGames.forEach((game) => {
+          game.addEventListener("click", () => {
+            if (!game.classList.contains("disabled")) {
+              openModal(game);
+            }
+          });
+        });
+
+        closeModalBtn.addEventListener("click", closeModal);
+
+        modal.addEventListener("click", function (e) {
+          if (e.target === modal) {
+            closeModal();
+          }
+        });
+
+        document.addEventListener("keydown", function (e) {
+          if (e.key === "Escape" && modal.classList.contains("active")) {
+            closeModal();
+          }
+        });
+
+        // Save and Send functionality
+        saveAndSendBtn.addEventListener("click", function () {
+          if (
+            currentRoundIndex === null ||
+            currentMatchIndex === null ||
+            !seedingLocked
+          )
+            return;
+
+          const team1Score = parseInt(
+            document.getElementById("team1Score").value
+          );
+          const team2Score = parseInt(
+            document.getElementById("team2Score").value
+          );
+
+          // Update match data
+          const match = tournamentBracket[currentRoundIndex][currentMatchIndex];
+          match.team1.score = team1Score;
+          match.team2.score = team2Score;
+
+          // Determine winner
+          if (team1Score > team2Score) {
+            match.winner = match.team1.seed;
+          } else if (team2Score > team1Score) {
+            match.winner = match.team2.seed;
+          } else {
+            match.winner = null;
+          }
+
+          // Update next rounds with winner
+          updateNextRounds(currentRoundIndex, currentMatchIndex);
+
+          // Re-render bracket
+          renderBracket();
+
+          // Get messaging settings
+          const smsEnabled = document.getElementById("smsToggle").checked;
+          const emailEnabled = document.getElementById("emailToggle").checked;
+          const pushEnabled = document.getElementById("pushToggle").checked;
+
+          console.log("Scores updated:", { team1Score, team2Score });
+          console.log("Messaging settings:", {
+            smsEnabled,
+            emailEnabled,
+            pushEnabled,
+          });
+
+          closeModal();
+        });
+
+        // View/Edit Messaging functionality
+        viewMessagingBtn.addEventListener("click", function () {
+          console.log("View or Edit Messaging clicked");
+          alert("Messaging interface would open here");
+        });
+
+        // Score input validation
+        const scoreInputs = document.querySelectorAll(".score-input");
+        scoreInputs.forEach((input) => {
+          input.addEventListener("input", function () {
+            if (this.value < 0) this.value = 0;
+            if (this.value > 999) this.value = 999;
+          });
+        });
+      }
+
+      // Initialize control panel events
+      document
+        .getElementById("seedingBtn")
+        .addEventListener("click", openSeedingModal);
+      document
+        .getElementById("lockSeedingBtn")
+        .addEventListener("click", unlockSeeding);
+      document
+        .getElementById("closeSeedingModal")
+        .addEventListener("click", closeSeedingModal);
+      document
+        .getElementById("cancelSeeding")
+        .addEventListener("click", closeSeedingModal);
+      document
+        .getElementById("saveSeeding")
+        .addEventListener("click", saveSeeding);
+
+      // Close seeding modal on outside click
+      document
+        .getElementById("seedingModal")
+        .addEventListener("click", function (e) {
+          if (e.target === this) {
+            closeSeedingModal();
+          }
+        });
+
+      // Initial render
+      document.addEventListener("DOMContentLoaded", function () {
+        renderBracket();
+      });
+    </script>
+  </body>
+</html>
